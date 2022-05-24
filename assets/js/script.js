@@ -27,6 +27,12 @@ var taskFormHandler = function(event) {
     // more generally the square brackets are used to select an element based on one of its attributes
     // its kind of equivalent to pulling specific items from an array
     var taskTypeInput = document.querySelector("select[name='task-type']").value;
+    if (!taskNameInput || !taskTypeInput) {
+        alert("You need to fill out both fields.");
+        return;
+    };
+    formEl.reset();
+    // blanks out the form
 
     var taskDataObj = {
         name: taskNameInput,
