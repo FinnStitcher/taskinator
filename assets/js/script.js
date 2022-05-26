@@ -1,4 +1,5 @@
 var formEl = document.querySelector("#task-form");
+var pageContentEl = document.querySelector("#page-content");
 
 var toDoEl = document.querySelector("#to-do");
 var inProgressEl = document.querySelector("#in-progress");
@@ -48,7 +49,7 @@ function createTaskActions(taskId) {
     var deleteButtonEl = document.createElement("button");
     deleteButtonEl.textContent = "Delete";
     deleteButtonEl.className = "btn delete-btn";
-    deleteButtonEl.setAttribute("data-tak-id", taskId);
+    deleteButtonEl.setAttribute("data-task-id", taskId);
     // make delete button
 
     var statusSelectEl = document.createElement("select");
@@ -75,6 +76,13 @@ function createTaskActions(taskId) {
     // append the edit button, delete button, and dropdown to the container, in that order
 
     return actionContainerEl;
+};
+// called in createTaskEl
+
+function deleteTask(taskId) {
+    var taskSelected = document.querySelector(`.task-item[data-task-id='${taskId}']`);
+    // find the first element with the class task-item that also has the data-task-id value of the provided id
+    taskSelected.remove();
 };
 
 var taskFormHandler = function(event) {
@@ -111,3 +119,12 @@ formEl.addEventListener("submit", taskFormHandler);
 // the event listener is attached to the whole form so it can gather all the data from it
 // more specifically when the submit button is pushed, the event listener is called, and the browser wraps up all the form data as an object so it can be used
 // that object is then given to createTaskHandler as the value of the parameter "event"
+
+var taskButtonHandler = function(event) {
+    if (event.target.matches(".delete-btn")) {
+        var taskId = event.target.getAttribute("data-task-id");
+        deleteTask(taskId);
+    };
+};
+
+pageContentEl.addEventListener("click", taskButtonHandler);
