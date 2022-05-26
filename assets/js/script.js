@@ -16,6 +16,7 @@ var tasks = [];
 // taskButtonHandler
 //    editTask
 //    deleteTask
+// taskStatusChangeHandler
 
 
 var createTaskEl = function(taskDataObj) {
@@ -45,6 +46,7 @@ var createTaskEl = function(taskDataObj) {
 
     taskDataObj.id = taskIdCounter;
     tasks.push(taskDataObj);
+    saveTasks();
 
     taskIdCounter++;
 };
@@ -110,9 +112,55 @@ var completeEditTask = function(taskName, taskType, taskId) {
     // loop through the tasks array checking the id property of each object in it
     // if the id of that one matches the one we're editing, update the name and type
 
+    saveTasks();
+
     formEl.removeAttribute("data-task-id");
     document.querySelector("#add-task").textContent = "Add Task";
 };
+
+var editTask = function(taskId) {
+    var taskSelected = document.querySelector(`.task-item[data-task-id='${taskId}']`);
+
+    var taskName = taskSelected.querySelector("h3.task-name").textContent;
+    var taskType = taskSelected.querySelector("span.task-type").textContent;
+    // gather data from the task and save it as variables
+
+    formEl.setAttribute("data-task-id", taskId);
+    // store the id of the task we're editing on the form, so it can be used again
+    // this doesn't seem correct? i'll stick with it and see if this needs to be changed
+
+    document.querySelector("input[name='task-name']").value = taskName;
+    document.querySelector("select[name='task-type']").value = taskType;
+    // grab the form inputs and fill them with the data of the task you're trying to edit
+    document.querySelector("#add-task").textContent = "Save Task";
+};
+
+var deleteTask = function(taskId) {
+    var taskSelected = document.querySelector(`.task-item[data-task-id='${taskId}']`);
+    // find the first element with the class task-item that also has the data-task-id value of the provided id
+    taskSelected.remove();
+
+    var updatedTaskArr = [];
+
+    for (var i = 0; i < tasks.length; i++) {
+        if (tasks[i].id !== parseInt(taskId)) {
+            updatedTaskArr.push(tasks[i]);
+        };
+    };
+    // check each item in the tasks array
+    // if it's NOT the one we just deleted, push it into updatedTaskArr
+
+    tasks = updatedTaskArr;
+    saveTasks();
+};
+
+
+var saveTasks = function() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    // localStorage can only store strings, not any other data types, and it doesn't really know what to do with objects
+    // JSON.stringify handles that
+};
+
 
 var taskFormHandler = function(event) {
     event.preventDefault();
@@ -161,42 +209,6 @@ formEl.addEventListener("submit", taskFormHandler);
 // more specifically when the submit button is pushed, the event listener is called, and the browser wraps up all the form data as an object so it can be used
 // that object is then given to createTaskHandler as the value of the parameter "event"
 
-
-var editTask = function(taskId) {
-    var taskSelected = document.querySelector(`.task-item[data-task-id='${taskId}']`);
-
-    var taskName = taskSelected.querySelector("h3.task-name").textContent;
-    var taskType = taskSelected.querySelector("span.task-type").textContent;
-    // gather data from the task and save it as variables
-
-    formEl.setAttribute("data-task-id", taskId);
-    // store the id of the task we're editing on the form, so it can be used again
-    // this doesn't seem correct? i'll stick with it and see if this needs to be changed
-
-    document.querySelector("input[name='task-name']").value = taskName;
-    document.querySelector("select[name='task-type']").value = taskType;
-    // grab the form inputs and fill them with the data of the task you're trying to edit
-    document.querySelector("#add-task").textContent = "Save Task";
-};
-
-var deleteTask = function(taskId) {
-    var taskSelected = document.querySelector(`.task-item[data-task-id='${taskId}']`);
-    // find the first element with the class task-item that also has the data-task-id value of the provided id
-    taskSelected.remove();
-
-    var updatedTaskArr = [];
-
-    for (var i = 0; i < tasks.length; i++) {
-        if (tasks[i].id !== parseInt(taskId)) {
-            updatedTaskArr.push(tasks[i]);
-        };
-    };
-    // check each item in the tasks array
-    // if it's NOT the one we just deleted, push it into updatedTaskArr
-
-    tasks = updatedTaskArr;
-};
-
 var taskButtonHandler = function(event) {
     var targetEl = event.target;
     var taskId = targetEl.getAttribute("data-task-id");
@@ -233,6 +245,8 @@ var taskStatusChangeHandler = function(event) {
             tasks[i].status = statusValue;
         };
     };
+
+    saveTasks();
 };
 pageContentEl.addEventListener("click", taskButtonHandler);
 pageContentEl.addEventListener("change", taskStatusChangeHandler);
