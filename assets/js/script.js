@@ -7,7 +7,17 @@ var completedEl = document.querySelector("#completed");
 
 var taskIdCounter = 0;
 
-function createTaskEl(taskDataObj) {
+
+// taskFormHandler
+//    createTaskEl
+//        createTaskActions
+//    completeEditTask
+// taskButtonHandler
+//    editTask
+//    deleteTask
+
+
+var createTaskEl = function(taskDataObj) {
     var listItemEl = document.createElement("li");
     listItemEl.className = "task-item";
     listItemEl.setAttribute("data-task-id", taskIdCounter);
@@ -35,7 +45,7 @@ function createTaskEl(taskDataObj) {
     taskIdCounter++;
 };
 
-function createTaskActions(taskId) {
+var createTaskActions = function(taskId) {
     var actionContainerEl = document.createElement("div");
     actionContainerEl.className = "task-actions";
     // create container for buttons and stuff
@@ -77,7 +87,19 @@ function createTaskActions(taskId) {
 
     return actionContainerEl;
 };
-// called in createTaskEl
+
+var completeEditTask = function(taskName, taskType, taskId) {
+    var taskSelected = document.querySelector(`.task-item[data-task-id='${taskId}']`);
+    // get the indicated task
+
+    taskSelected.querySelector("h3.task-name").textContent = taskName;
+    taskSelected.querySelector("span.task-type").textContent = taskType;
+
+    alert("Task updated!");
+
+    formEl.removeAttribute("data-task-id");
+    document.querySelector("#add-task").textContent = "Add Task";
+};
 
 var editTask = function(taskId) {
     var taskSelected = document.querySelector(`.task-item[data-task-id='${taskId}']`);
@@ -88,12 +110,12 @@ var editTask = function(taskId) {
 
     formEl.setAttribute("data-task-id", taskId);
     // store the id of the task we're editing on the form, so it can be used again
+    // this doesn't seem correct? i'll stick with it and see if this needs to be changed
 
     document.querySelector("input[name='task-name']").value = taskName;
     document.querySelector("select[name='task-type']").value = taskType;
     // grab the form inputs and fill them with the data of the task you're trying to edit
     document.querySelector("#add-task").textContent = "Save Task";
-    // need to make this switch back later
 };
 
 var deleteTask = function(taskId) {
@@ -101,6 +123,7 @@ var deleteTask = function(taskId) {
     // find the first element with the class task-item that also has the data-task-id value of the provided id
     taskSelected.remove();
 };
+
 
 var taskFormHandler = function(event) {
     event.preventDefault();
@@ -119,17 +142,28 @@ var taskFormHandler = function(event) {
     formEl.reset();
     // blanks out the form
 
-    var taskDataObj = {
-        name: taskNameInput,
-        type: taskTypeInput
+    var isEdit = formEl.hasAttribute("data-task-id");
+
+    if (isEdit) {
+        var taskId = formEl.getAttribute("data-task-id");
+        completeEditTask(taskNameInput, taskTypeInput, taskId);
+        // if the form has the data-task-id attribute, it's being used to edit an existing task
+        // get the id of the relevant task from the form
+        // send the info currently in the form AND the task id to completeEditTask
+    }
+    else {
+        var taskDataObj = {
+            name: taskNameInput,
+            type: taskTypeInput
+        };
+        createTaskEl(taskDataObj);
+        // the form doesnt have the data-task-id attribute, so we're making a new task
+        // get the data currently in the form and wrap it up as an object
+        // send it to createTaskEl
     };
-
-    createTaskEl(taskDataObj);
 };
-
 formEl.addEventListener("submit", taskFormHandler);
 // no parentheses after the createTaskHandler call because that would call it as the page loads, rather than giving it to the event listener as a parameter
-
 // event type submit means this event listener will watch for
     // 1. a button with the type "submit" being clicked
     // 2. the enter button being pressed
@@ -148,5 +182,27 @@ var taskButtonHandler = function(event) {
         deleteTask(taskId);
     };
 };
+var taskStatusChangeHandler = function(event) {
+    var targetEl = event.target;
 
+    var taskId = targetEl.getAttribute("data-task-id");
+    var statusValue = targetEl.value.toLowerCase();
+    var taskSelected = document.querySelector(`.task-item[data-task-id='${taskId}']`);
+
+    if (statusValue === "to do") {
+        toDoEl.appendChild(taskSelected);
+    }
+    else if (statusValue === "in progress") {
+        inProgressEl.appendChild(taskSelected);
+    }
+    else if (statusValue === "completed") {
+        completedEl.appendChild(taskSelected);
+    };
+    // we don't need to remove the task from its original location because appendChild does that for us
+    // we aren't making a clone of it - we selected the original and stored it in taskSelected
+    // by appending taskSelected somewhere else, we're actually moving the thing
+};
 pageContentEl.addEventListener("click", taskButtonHandler);
+pageContentEl.addEventListener("change", taskStatusChangeHandler);
+
+// note: need to look into how the change event works
