@@ -163,53 +163,20 @@ var saveTasks = function() {
 };
 
 var loadTasks = function() {
-    tasks = localStorage.getItem("tasks");
+    var savedTasks = localStorage.getItem("tasks");
 
-    if (!tasks) {
-        tasks = [];
+    if (!savedTasks) {
         return false;
         // apparently this return false; breaks us out of the function?
-        // also !tasks is equivalent to tasks === null
+        // also !savedTasks is equivalent to savedTasks === null
     };
 
-    tasks = JSON.parse(tasks);
-    for (var i = 0; i < tasks.length; i++) {
-        tasks[i].id = taskIdCounter;
+    savedTasks = JSON.parse(savedTasks);
 
-        var listItemEl = document.createElement("li");
-        listItemEl.className = "task-item";
-        listItemEl.setAttribute("data-task-id", tasks[i].id);
-
-        var taskInfoEl = document.createElement("div");
-        taskInfoEl.className = "task-info";
-        taskInfoEl.innerHTML = `
-            <h3 class="task-name">${tasks[i].name}</h3>
-            <span class="task-type">${tasks[i].type}</span>
-        `;
-
-        var taskActionsEl = createTaskActions(tasks[i].id);
-
-        listItemEl.appendChild(taskInfoEl);
-        listItemEl.appendChild(taskActionsEl);
-
-        if (tasks[i].status = "to do") {
-            listItemEl.querySelector("select[name='status-change']").selectedIndex = 0;
-            // set the select element (dropdown) on the task to have "To Do" selected by default
-            toDoEl.appendChild(listItemEl);
-        } else if (tasks[i].status = "in progress") {
-            listItemEl.querySelector("select[name='status-change']").selectedIndex = 1;
-            // set the select element (dropdown) on the task to have "To Do" selected by default
-            inProgressEl.appendChild(listItemEl);
-        } else if (tasks[i].status = "complete") {
-            listItemEl.querySelector("select[name='status-change']").selectedIndex = 2;
-            // set the select element (dropdown) on the task to have "To Do" selected by default
-            completedEl.appendChild(listItemEl);
-        };
-
-        taskIdCounter++;
+    for (var i = 0; i < savedTasks.length; i++) {
+        createTaskEl(savedTasks[i]);
     };
 };
-loadTasks();
 
 
 var taskFormHandler = function(event) {
@@ -302,3 +269,6 @@ pageContentEl.addEventListener("click", taskButtonHandler);
 pageContentEl.addEventListener("change", taskStatusChangeHandler);
 
 // note: need to look into how the change event works
+
+
+loadTasks();
